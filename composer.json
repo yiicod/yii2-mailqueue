@@ -1,0 +1,22 @@
+{
+    "name": "yiicod/mailqueue",
+    "type": "yii-extension",
+    "license": "New BSD License",
+    "authors": [
+        {
+            "name": "Alexey Orlov",
+            "email": "aaorlov88@gmail.com",
+            "homepage": "http://phpteamlib.apache.devplatform1.com/",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "yiicod/cron": "0.1.*",
+        "yiisoft/yii": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "yiicod\\mailqueue\\": "/"
+        }
+    }
+}

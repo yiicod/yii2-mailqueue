@@ -1,0 +1,187 @@
+<?php
+
+namespace yiicod\mailqueue\components;
+
+use CDbCriteria;
+use Yii;
+use yii\base\Component;
+use yii\console\Application;
+use yii\helpers\ArrayHelper;
+use yii\helpers\BaseJson;
+
+class MailQueue extends Component
+{
+
+    public $afterSendDelete = false;
+
+    /**
+     *
+     * @var type 
+     */
+    public $partSize = 50;
+
+    /**
+     * Push mass
+     * array(
+     *    array(
+     *      'field name to' => '',
+     *      'field name subject' => '',
+     *      'field name body' => '',
+     *      'field name priority' => '',
+     *      'field name from' => '',
+     *      'field name attachs' => '',
+     *    )
+     * )
+     * @param Array $data
+     * @return int Return int
+     */
+    public function pushMass($data)
+    {
+        $table = Yii::$app->get('mailqueue')->modelMap['MailQueue']['class'];
+        $model = new $table();
+
+        $prepareData = [];
+        $prepareValues = [];
+        $prepareKeys = [];
+        $index = 1;
+        foreach ($data as $item) {
+            if (is_array($item)) {
+                $prepareData = ArrayHelper::merge([
+                            $model->fieldFrom => '',
+                            $model->fieldTo => '',
+                            $model->fieldSubject => '',
+                            $model->fieldBody => '',
+                            $model->fieldAttachs => [],
+                            $model->fieldStatus => Yii::$app->get('mailqueue')->modelMap['MailQueue']['status']['unsended']
+                                ], $item);
+                $prepareData[$model->fieldAttachs] = BaseJson::encode($prepareData[$model->fieldAttachs]);
+                $prepareKeys = empty($prepareKeys) ? array_keys($prepareData) : $prepareKeys;
+                $prepareValues[] = array_values($prepareData);
+            }
+
+            if (($index % $this->partSize === 0 || $index >= count($data)) && false === empty($prepareValues)) {
+                //Reconnect for big duration
+                Yii::$app->db->close();
+                Yii::$app->db->open();
+                Yii::$app->db
+                        ->createCommand()
+                        ->batchInsert($table::tableName(), $prepareKeys, $prepareValues)
+                        ->execute();
+                $prepareValues = [];
+            }
+            $index++;
+        }
+        //Reconnect for db stable works 
+        Yii::$app->db->close();
+        Yii::$app->db->open();
+    }
+
+    /**
+     * Add mail from queue
+     * @param string $to Email to
+     * @param string $subject Email subject
+     * @param string Body email, html
+     * @param string|Array From email
+     * @param string Attach for email array('path' => 'file path', 'name' => 'file bname')
+     */
+    public function push($to, $subject, $body, $priority = 0, $from = '', array $attachs = [])
+    {
+        $table = Yii::$app->get('mailqueue')->modelMap['MailQueue']['class'];
+        $model = new $table();
+
+        $model->from = $from;
+        $model->to = $to;
+        $model->subject = $subject;
+        $model->body = $body;
+        $model->setAttachs($attachs);
+        $model->status = Yii::$app->get('mailqueue')->modelMap['MailQueue']['status']['unsended'];
+
+        if (in_array($model->fieldPriority, $model->attributes())) {
+            $model->priority = $priority;
+        }
+
+        return $model->save();
+    }
+
+    /**
+     * Send mail from queue
+     * @param CDbCriteria
+     */
+    public function delivery($criteria)
+    {
+        $criteria = ArrayHelper::merge([
+                    'where' => [],
+                    'params' => [],
+                    'order' => null,
+                    'limit' => null
+                        ], $criteria);
+        $table = Yii::$app->get('mailqueue')->modelMap['MailQueue']['class'];
+
+        $models = $table::find()
+                ->where($criteria['where'])
+                ->params($criteria['params'])
+                ->orderBy($criteria['order'])
+                ->limit($criteria['limit'])
+                ->all();
+
+        $item = null;
+        $ids = [];
+        $failedIds = [];
+        $statusSended = Yii::$app->get('mailqueue')->modelMap['MailQueue']['status']['sended'];
+        $statusUnsended = Yii::$app->get('mailqueue')->modelMap['MailQueue']['status']['unsended'];
+        $statusFailed = Yii::$app->get('mailqueue')->modelMap['MailQueue']['status']['failed'];
+        $fieldStatus = Yii::$app->get('mailqueue')->modelMap['MailQueue']['fieldStatus'];
+
+        if (method_exists(Yii::$app->{Yii::$app->get('mailqueue')->mailer}, 'deliveryBegin')) {
+            Yii::$app->{Yii::$app->get('mailqueue')->mailer}->deliveryBegin($models);
+        }
+        foreach ($models as $item) {
+            $attachs = $item->getAttachs();
+            $mailer = Yii::$app->{Yii::$app->get('mailqueue')->mailer};
+            $message = $mailer->compose();
+            $message->setTo($item->to)
+                    ->setSubject($item->subject)
+                    ->setHtmlBody($item->body);
+            if ($item->from) {
+                $message->setFrom($item->from);
+            }
+            if (is_array($attachs)) {
+                foreach ($attachs as $attach) {
+                    $message->attach($attach);
+                }
+            }
+            if ($message->send()) {
+                $ids[] = $item->id;
+            } else {
+                if (YII_DEBUG && Yii::$app instanceof Application) {
+                    echo "MailQueue send failed to - $item->to, subject - $item->subject \n";
+                }
+                Yii::error("MailQueue send failed to - $item->to, subject - $item->subject \n", 'system.mailqueue');
+                $failedIds[] = $item->id;
+            }
+        }
+
+        if (method_exists(Yii::$app->{Yii::$app->get('mailqueue')->mailer}, 'deliveryEnd')) {
+            Yii::$app->{Yii::$app->get('mailqueue')->mailer}->deliveryEnd($ids, $failedIds);
+        }
+
+        if (count($ids)) {
+            if ($this->afterSendDelete) {
+                $table::deleteAll(['id' => $ids]);
+            } else if (in_array($fieldStatus, $item->attributes())) {
+                $status = $statusSended;
+                $table::updateAll([
+                    $fieldStatus => $status
+                        ], ['id' => $ids]);
+            }
+        }
+        if (count($failedIds) && in_array($fieldStatus, $item->attributes())) {
+            $status = $statusUnsended;
+            if ($statusFailed != $statusUnsended) {
+                $status = $statusFailed;
+            }
+            $table::updateAll([$fieldStatus => $status], ['id' => $failedIds]);
+        }
+    }
+
+}
