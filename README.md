@@ -1,8 +1,8 @@
 Mail Queue
 ==========
-Mail queue for emails. You don't need how many emails will be send, because 
-when you install this extension you can setteng how it. You will have table, where you 
-can see status all emails.
+Mail queue for emails. You don't need think how many emails will be send, because 
+when you install this extension you can setting this. You will have table, where you 
+can see emails status.
 
 The preferred way to install this extension is through [composer](http://getcomposer.org/download/).
 
@@ -18,6 +18,21 @@ or add
 "yiicod/auth": "*"
 ```
 
+to the require section of your composer.json.
+
+run
+```php
+php yii migrate/up --migrationPath=@yiicod/auth/migrations
+```
+Please note that messages are wrapped with ```Yii::t()``` to support message translations, you should define default message source for them if you don't use i18n.
+```php
+'i18n' => [
+    'translations' => [
+        '*' => [
+            'class' => 'yii\i18n\PhpMessageSource'
+        ],
+    ],
+],
 
 Config
 ---------------------------------------------
@@ -189,6 +204,7 @@ class SmartMailer extends <component>
         if (false === $this->sendMass($this->deliveryQueue)) {
             $failedIds = $successIds;
         }
+        $this->deliveryQueue = [];
     }
 
     public function sendMass($messages){

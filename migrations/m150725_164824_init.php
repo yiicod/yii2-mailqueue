@@ -19,7 +19,7 @@ class m150725_164824_init extends Migration
             'subject' => Schema::TYPE_STRING . '(100) NOT NULL',
             'body' => Schema::TYPE_TEXT . ' NOT NULL',
             'attachs' => Schema::TYPE_TEXT . ' NOT NULL',
-            'priority' => Schema::TYPE_SMALLINT . '(2) NOT NULL',
+            'priority' => Schema::TYPE_SMALLINT . '(2) NOT NULL DEFAULT 0',
             'status' => Schema::TYPE_SMALLINT . '(1) NOT NULL',
             'createdDate' => Schema::TYPE_DATETIME . ' NOT NULL',
             'updatedDate' => Schema::TYPE_DATETIME . ' NOT NULL',
