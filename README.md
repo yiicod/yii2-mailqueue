@@ -9,13 +9,13 @@ The preferred way to install this extension is through [composer](http://getcomp
 Either run
 
 ```
-php composer.phar require --prefer-dist yiicod/yii2-auth "*"
+php composer.phar require --prefer-dist yiicod/yii2-mailqueue "*"
 ```
 
 or add
 
 ```json
-"yiicod/auth": "*"
+"yiicod/yii2-mailqueue": "*"
 ```
 
 to the require section of your composer.json.
@@ -55,6 +55,8 @@ Lite config
         ),
     ...    
 )
+...
+'preload' => array('mailqueue')
 ```
 
 Full config
@@ -120,11 +122,12 @@ Push in queue
  * Add mail from queue
  * @param string $to Email to
  * @param string $subject Email subject
- * @param string Body email, html
- * @param string|Array From email
- * @param string Attach for email array('path' => 'file path', 'name' => 'file bname')
+ * @param string $body email, html
+ * @param string|Array $from From email
+ * @param string $attachs Attach for email array('path' => 'file path', 'name' => 'file bname')
+ * @param Array $additionalFields Any additional fields
  */
-Yii::app()->mailQueue->push($to, $subject, $body, $from = '', array $attachs = array());
+Yii::app()->mailQueue->push($to, $subject, $body, $from = '', array $attachs = [], $additionalFields = []);
 ```
 OR
 ```php

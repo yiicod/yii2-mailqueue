@@ -12,6 +12,7 @@
     ],
     "require": {
         "yiicod/yii2-cron": "1.*",
+        "yiicod/yii2-base": "*",
         "yiisoft/yii": "*"
     },
     "autoload": {

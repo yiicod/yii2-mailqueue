@@ -11,8 +11,8 @@ return [
             'fieldPriority' => 'priority',
             'fieldAttachs' => 'attachs',
             'fieldStatus' => 'status',
-            'fieldCreateDate' => 'createDate',
-            'fieldUpdateDate' => 'updateDate',
+            'fieldCreateDate' => 'createdDate',
+            'fieldUpdateDate' => 'updatedDate',
             'status' => [
                 'sended' => 1,
                 'unsended' => 0,
