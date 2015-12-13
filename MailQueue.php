@@ -56,6 +56,22 @@ class MailQueue extends Component
 
         Yii::$app->setComponents($this->components);
         
+        //Set components
+        if (count($this->components)) {
+            $exists = Yii::$app->getComponents(false);
+            foreach ($this->components as $component => $params) {
+                if (isset($exists[$component]) && is_object($exists[$component])) {
+                    unset($this->components[$component]);
+                } elseif (isset($exists[$component])) {
+                    $this->components[$component] = ArrayHelper::merge($params, $exists[$component]);
+                }
+            }
+            
+            Yii::$app->setComponents(
+                $this->components, false
+            );
+        }        
+        
         Yii::setAlias('@yiicod', realpath(dirname(__FILE__) . '/..'));
     }
 
