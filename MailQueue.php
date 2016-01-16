@@ -4,8 +4,8 @@ namespace yiicod\mailqueue;
 
 use Yii;
 use yii\base\Component;
-use yii\console\Application;
 use yii\helpers\ArrayHelper;
+use yii\web\Application;
 
 /**
  * Comments extension settings

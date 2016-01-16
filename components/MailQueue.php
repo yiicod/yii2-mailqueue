@@ -5,9 +5,10 @@ namespace yiicod\mailqueue\components;
 use CDbCriteria;
 use Yii;
 use yii\base\Component;
-use yii\console\Application;
 use yii\helpers\ArrayHelper;
 use yii\helpers\BaseJson;
+use yii\console\Application;
+use const YII_DEBUG;
 
 class MailQueue extends Component
 {
@@ -102,11 +103,11 @@ class MailQueue extends Component
         if (in_array($model->fieldPriority, $model->attributes())) {
             $model->priority = $priority;
         }
-        
+
         foreach ($additionalFields as $field => $value) {
             $model->{$field} = $value;
         }
-        
+
         return $model->save();
     }
 
@@ -131,6 +132,7 @@ class MailQueue extends Component
         $statusUnsended = Yii::$app->get('mailqueue')->modelMap['MailQueue']['status']['unsended'];
         $statusFailed = Yii::$app->get('mailqueue')->modelMap['MailQueue']['status']['failed'];
         $fieldStatus = Yii::$app->get('mailqueue')->modelMap['MailQueue']['fieldStatus'];
+        $mailer = Yii::$app->{Yii::$app->get('mailqueue')->mailer};
 
         while ($deliveringCount > 0) {
             $criteria['limit'] = min($this->partSize, $deliveringCount);
@@ -141,8 +143,8 @@ class MailQueue extends Component
                     ->limit($criteria['limit'])
                     ->all();
 
-            if (method_exists(Yii::$app->{Yii::$app->get('mailqueue')->mailer}, 'deliveryBegin')) {
-                Yii::$app->{Yii::$app->get('mailqueue')->mailer}->deliveryBegin($models);
+            if (method_exists($mailer, 'deliveryBegin')) {
+                $mailer->deliveryBegin($models);
             }
             foreach ($models as $item) {
                 $attachs = $item->getAttachs();
@@ -170,8 +172,8 @@ class MailQueue extends Component
                 }
             }
 
-            if (method_exists(Yii::$app->{Yii::$app->get('mailqueue')->mailer}, 'deliveryEnd')) {
-                Yii::$app->{Yii::$app->get('mailqueue')->mailer}->deliveryEnd($ids, $failedIds);
+            if (method_exists($mailer, 'deliveryEnd')) {
+                $mailer->deliveryEnd($ids, $failedIds);
             }
 
             if (count($ids)) {

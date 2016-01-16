@@ -53,13 +53,13 @@ class MailQueueCommand extends Controller
         $criteria['order'] = $this->order;
         $criteria['limit'] = $this->limit;
 
-        //try {
+        try {
             Yii::$app->mailQueue->delivery($criteria);
-//        } catch (Exception $e) {
-//            if (YII_DEBUG) {
-//                Yii::error("MailQueueCommand: " . $e->getMessage(), 'system.mailqueue');
-//            }
-//        }
+        } catch (Exception $e) {
+            if (YII_DEBUG) {
+                Yii::error("MailQueueCommand: " . $e->getMessage(), 'system.mailqueue');
+            }
+        }
     }
 
     public function behaviors()
