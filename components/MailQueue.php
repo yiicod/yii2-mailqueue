@@ -41,7 +41,6 @@ class MailQueue extends Component
         $table = Yii::$app->get('mailqueue')->modelMap['MailQueue']['class'];
         $model = new $table();
 
-        $prepareData = [];
         $prepareValues = [];
         $prepareKeys = [];
         $index = 1;
