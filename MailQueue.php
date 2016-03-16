@@ -5,7 +5,7 @@ namespace yiicod\mailqueue;
 use Yii;
 use yii\base\Component;
 use yii\helpers\ArrayHelper;
-use yii\web\Application;
+use yii\console\Application;
 
 /**
  * Comments extension settings
