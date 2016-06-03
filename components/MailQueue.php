@@ -8,7 +8,6 @@ use yii\base\Component;
 use yii\helpers\ArrayHelper;
 use yii\helpers\BaseJson;
 use yii\console\Application;
-use const YII_DEBUG;
 
 class MailQueue extends Component
 {
