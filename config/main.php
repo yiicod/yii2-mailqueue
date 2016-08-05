@@ -23,8 +23,8 @@ return [
     'commandMap' => [
         'mailQueue' => [
             'class' => 'yiicod\mailqueue\commands\MailQueueCommand',
-            'condition' => 'status=:unsend OR status=:failed',
-            'params' => [':unsend' => 0, ':failed' => 2],
+            'condition' => 'status=:unsend',
+            'params' => [':unsend' => 0],
             'limit' => 60,
         ],
     ],
