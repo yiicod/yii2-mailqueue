@@ -57,6 +57,9 @@ class MailQueue extends Component
                 if (in_array($model->fieldCreateDate, $model->attributes())) {
                     $prepareData[$model->fieldCreateDate] = date("Y-m-d H:i:s");
                 }
+                if (in_array($model->fieldUpdateDate, $model->attributes())) {
+                    $prepareData[$model->fieldUpdateDate] = date("Y-m-d H:i:s");
+                }
                 $prepareKeys = empty($prepareKeys) ? array_keys($prepareData) : $prepareKeys;
                 $prepareValues[] = array_values($prepareData);
             }

@@ -22,7 +22,7 @@ to the require section of your composer.json.
 
 run
 ```php
-php yii migrate/up --migrationPath=@yiicod/auth/migrations
+php yii migrate/up --migrationPath=@yiicod/mailqueue/migrations
 ```
 Please note that messages are wrapped with ```Yii::t()``` to support message translations, you should define default message source for them if you don't use i18n.
 ```php
@@ -83,7 +83,7 @@ Full config
                     )
                 )
             ),
-            'mailer' => 'phpMailer',
+            'mailer' => 'mailer',
             'components' => array(
                 'mailQueue' => array(
                     'class' => 'yiicod\mailqueue\components\MailQueue',
