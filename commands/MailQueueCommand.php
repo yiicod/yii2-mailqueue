@@ -4,73 +4,65 @@ namespace yiicod\mailqueue\commands;
 
 use Exception;
 use Yii;
-use yii\console\Controller;
 use yii\helpers\ArrayHelper;
+use yiicod\base\helpers\LoggerMessage;
+use yiicod\cron\commands\behaviors\LockUnLockBehavior;
+use yiicod\cron\commands\DaemonController;
+use yiicod\mailqueue\components\MailHandler;
+use yiicod\mailqueue\components\MailHandlerInterface;
+use yiicod\mailqueue\MailQueue;
 
 /**
  * Console command
  * class MailQueueCommand
  */
-class MailQueueCommand extends Controller
+class MailQueueCommand extends DaemonController
 {
-
     /**
-     * @var integer Limit of mail
+     * @var MailHandlerInterface
      */
-    public $limit = 60;
+    public $mailProvider = MailHandler::class;
 
     /**
-     * Condition string
-     * @var string
-     */
-    public $condition = 'status=:status';
-
-    /**
-     * 
-     * @var string 'priority DESC'
-     */
-    public $order = null;
-
-    /**
-     * Params for condition
-     * @var array
-     */
-    public $params = array('status' => 0);
-
-    /**
-     * Time live file, 1 hour
+     * Only one command can run in the same time in {n} times
+     *
+     * @param int $timeLock
      */
     public $timeLock = 3600;
 
     /**
-     * Run send mail 
+     * Daemon name
+     *
+     * @return string
      */
-    public function actionIndex()
+    protected function daemonName(): string
     {
-        $criteria = [];
-        $criteria['where'] = $this->condition;
-        $criteria['params'] = $this->params;
-        $criteria['order'] = $this->order;
-        $criteria['limit'] = $this->limit;
+        return 'mail-queue';
+    }
 
+    /**
+     * Run send mail
+     */
+    public function worker()
+    {
         try {
-            Yii::$app->mailQueue->delivery($criteria);
+            Yii::$app->db->close();
+            Yii::$app->db->open();
+            MailQueue::delivery(new $this->mailProvider());
         } catch (Exception $e) {
-            if (YII_DEBUG) {
-                Yii::error("MailQueueCommand: " . $e->getMessage(), 'system.mailqueue');
-            }
+            Yii::error(LoggerMessage::log($e), __METHOD__);
         }
     }
 
     public function behaviors()
     {
         return ArrayHelper::merge(parent::behaviors(), [
-                    'LockUnLockBehavior' => [
-                        'class' => 'yiicod\cron\commands\behaviors\LockUnLockBehavior',
-                        'timeLock' => $this->timeLock
-                    ]
-                        ]
+                'LockUnLockBehavior' => [
+                    'class' => LockUnLockBehavior::className(),
+                    'enabled' => false === $this->daemonName(),
+                    'timeLock' => $this->timeLock,
+                ],
+            ]
         );
     }
-
 }

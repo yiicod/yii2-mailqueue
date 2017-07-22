@@ -6,31 +6,35 @@ use Yii;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 use yii\helpers\ArrayHelper;
+use yii\helpers\Json;
+use yiicod\base\models\behaviors\AttributesMapBehavior;
 
 /**
  * This is the model class for table "MailQueue".
  *
- * The followings are the available columns in table 'MailQueue':
+ * The followings are the available columns in table 'mailQueue':
+ *
  * @property string $id
  * @property string $to
  * @property string $subject
+ * @property string $mailer
  * @property string $body
+ * @property int $priority
  * @property string $status
  * @property string $dateCreate
  */
-class MailQueueModel extends ActiveRecord
+class MailQueueModel extends ActiveRecord implements MailRepositoryInterface
 {
-
     /**
      * @inheritdoc
      */
     public static function tableName()
     {
-        return 'MailQueue';
+        return 'mail_queue';
     }
 
     /**
-     * @return array validation rules for model attributes.
+     * @return array validation rules for model attributes
      */
     public function rules()
     {
@@ -40,21 +44,55 @@ class MailQueueModel extends ActiveRecord
             [['to', 'subject', 'body'], 'required'],
             [['to', 'subject'], 'string', 'max' => 255],
             ['status', 'string', 'max' => 1],
-            // The following rule is used by search().
-            // @todo Please remove those attributes that should not be searched.
-            [['id, to, subject, body, priority, status'], 'safe', 'on' => 'search'],
+            [array_values(static::attributesMap()), 'safe'],
         ];
     }
 
     /**
-     * @return array relational rules.
+     * Set field attachs
+     *
+     * @param array $value
      */
-    public function relations()
+    public function setAttaches(array $value)
     {
-        // NOTE: you may need to adjust the relation name and the related
-        // class name for the relations automatically generated below.
-        return array(
-        );
+        if (in_array('attaches', $this->attributes())) {
+            $this->attaches = Json::encode($value);
+        }
+    }
+
+    /**
+     * Get field attachs
+     *
+     * @return array
+     */
+    public function getAttaches(): array
+    {
+        $value = null;
+        if (in_array('attaches', $this->attributes())) {
+            $value = Json::decode($this->attaches);
+        }
+
+        return null === $value ? [] : $value;
+    }
+
+    public function getData(): array
+    {
+        return [
+            'to' => $this->to,
+            'subject' => $this->subject,
+            'mailer' => $this->mailer,
+            'body' => $this->body,
+            'priority' => $this->priority,
+            'status' => $this->status ?: 0, // @todo Think about this
+            'attaches' => $this->getAttaches(),
+        ];
+    }
+
+    public function push(): bool
+    {
+        $this->setAttributes($this->getData());
+
+        return $this->save();
     }
 
     /**
@@ -62,21 +100,23 @@ class MailQueueModel extends ActiveRecord
      */
     public function attributeLabels()
     {
-        return array(
+        return [
             'id' => Yii::t('mailqueue', 'Id'),
             'to' => Yii::t('mailqueue', 'To'),
+            'mailer' => Yii::t('mailqueue', 'Mailer'),
             'subject' => Yii::t('mailqueue', 'Subject'),
             'body' => Yii::t('mailqueue', 'Body'),
             'priority' => Yii::t('mailqueue', 'Priority'),
             'status' => Yii::t('mailqueue', 'Status'),
-            'dateCreate' => Yii::t('mailqueue', 'Date Create'),
-        );
+        ];
     }
 
     /**
      * Returns the static model of the specified AR class.
      * Please note that you should have this exact method in all your CActiveRecord descendants!
-     * @param string $className active record class name.
+     *
+     * @param string $className active record class name
+     *
      * @return MailQueueModel the static model class
      */
     public static function model($className = __CLASS__)
@@ -84,31 +124,43 @@ class MailQueueModel extends ActiveRecord
         return parent::model($className);
     }
 
+    public static function attributesMap()
+    {
+        return [
+            'fieldFrom' => 'from',
+            'fieldTo' => 'to',
+            'fieldMailer' => 'mailer',
+            'fieldSubject' => 'subject',
+            'fieldBody' => 'body',
+            'fieldPriority' => 'priority',
+            'fieldAttaches' => 'attaches',
+            'fieldStatus' => 'status',
+            'fieldCreatedDate' => 'created_date',
+            'fieldUpdatedDate' => 'updated_date',
+        ];
+    }
+
     public function behaviors()
     {
         $behaviors = [
             'attributesMapBehavior' => [
-                'class' => '\yiicod\mailqueue\models\behaviors\AttributesMapBehavior',
-                'attributesMap' => Yii::$app->get('mailqueue')->modelMap['MailQueue']
+                'class' => AttributesMapBehavior::class,
+                'attributesMap' => static::attributesMap(),
             ],
             'timestampBehavior' => [
                 'class' => TimestampBehavior::className(),
-                'createdAtAttribute' => in_array(Yii::$app->get('mailqueue')->modelMap['MailQueue']['fieldCreateDate'], $this->attributes()) ?
-                        Yii::$app->get('mailqueue')->modelMap['MailQueue']['fieldCreateDate'] : null,
-                'updatedAtAttribute' => in_array(Yii::$app->get('mailqueue')->modelMap['MailQueue']['fieldUpdateDate'], $this->attributes()) ?
-                        Yii::$app->get('mailqueue')->modelMap['MailQueue']['fieldUpdateDate'] : null,
-                'value' => function() {
-                    return date("Y-m-d H:i:s");
+                'createdAtAttribute' => static::attributesMap()['fieldCreatedDate'],
+                'updatedAtAttribute' => static::attributesMap()['fieldUpdatedDate'],
+                'value' => function () {
+                    return date('Y-m-d H:i:s');
                 },
             ],
             'XssBehavior' => [
                 'class' => '\yiicod\base\models\behaviors\XssBehavior',
-                'attributesExclude' => array(Yii::$app->get('mailqueue')->modelMap['MailQueue']['fieldBody'])
-            ]
+                'attributesExclude' => [static::attributesMap()['fieldBody']],
+            ],
         ];
-
 
         return ArrayHelper::merge(parent::behaviors(), $behaviors);
     }
-
 }

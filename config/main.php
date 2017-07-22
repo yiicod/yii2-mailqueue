@@ -2,37 +2,13 @@
 
 return [
     'modelMap' => [
-        'MailQueue' => [
-            'class' => 'yiicod\mailqueue\models\MailQueueModel',
-            'fieldFrom' => 'from',
-            'fieldTo' => 'to',
-            'fieldSubject' => 'subject',
-            'fieldBody' => 'body',
-            'fieldPriority' => 'priority',
-            'fieldAttachs' => 'attachs',
-            'fieldStatus' => 'status',
-            'fieldCreateDate' => 'createdDate',
-            'fieldUpdateDate' => 'updatedDate',
-            'status' => [
-                'sended' => 1,
-                'unsended' => 0,
-                'failed' => 2,
-            ]
-        ]
-    ],
-    'commandMap' => [
         'mailQueue' => [
-            'class' => 'yiicod\mailqueue\commands\MailQueueCommand',
-            'condition' => 'status=:unsend',
-            'params' => [':unsend' => 0],
-            'limit' => 60,
+            'class' => 'yiicod\mailqueue\models\MailQueueModel',
         ],
     ],
-    'mailer' => 'mailer',
-    'components' => [
-        'mailQueue' => [
-            'class' => 'yiicod\mailqueue\components\MailQueue',
-            'afterSendDelete' => false,
+    'commandMap' => [
+        'mail-queue' => [
+            'class' => 'yiicod\mailqueue\commands\MailQueueCommand',
         ],
     ],
 ];
