@@ -53,16 +53,4 @@ class MailQueueCommand extends DaemonController
             Yii::error(LoggerMessage::log($e), __METHOD__);
         }
     }
-
-    public function behaviors()
-    {
-        return ArrayHelper::merge(parent::behaviors(), [
-                'LockUnLockBehavior' => [
-                    'class' => LockUnLockBehavior::className(),
-                    'enabled' => false === $this->daemonName(),
-                    'timeLock' => $this->timeLock,
-                ],
-            ]
-        );
-    }
 }
