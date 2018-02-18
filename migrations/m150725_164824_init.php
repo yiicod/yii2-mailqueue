@@ -1,9 +1,4 @@
 <?php
-/**
- * Used this namespace for migration
- */
-
-namespace yiicod_mailqueue_migrations;
 
 use yii\db\Migration;
 use yii\db\Schema;
@@ -13,7 +8,7 @@ class m150725_164824_init extends Migration
     public function up()
     {
         $tableOptions = null;
-        if ($this->db->driverName === 'mysql') {
+        if ('mysql' === $this->db->driverName) {
             $tableOptions = 'CHARACTER SET utf8 COLLATE utf8_general_ci ENGINE=InnoDB';
         }
         $this->createTable('{{%mail_queue}}', [

@@ -61,8 +61,6 @@ class MailQueue extends Component implements BootstrapInterface
         }
 
         Yii::setAlias('@yiicod', realpath(dirname(__FILE__) . '/..'));
-        // Namespace for migration
-        Yii::setAlias('@yiicod_mailqueue_migrations', realpath(dirname(__FILE__) . '/migrations'));
     }
 
     /**
@@ -90,7 +88,7 @@ class MailQueue extends Component implements BootstrapInterface
     {
         $table = Yii::$app->mailqueue->modelMap['mailQueue']['class'];
 
-        $db = ($db === null ? Yii::$app->db : $db);
+        $db = (null === $db ? Yii::$app->db : $db);
         $columns = array_keys(reset($data));
         $items = array_chunk($data, $partSize);
         foreach ($items as $chunk) {

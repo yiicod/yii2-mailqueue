@@ -4,9 +4,7 @@ namespace yiicod\mailqueue\commands;
 
 use Exception;
 use Yii;
-use yii\helpers\ArrayHelper;
 use yiicod\base\helpers\LoggerMessage;
-use yiicod\cron\commands\behaviors\LockUnLockBehavior;
 use yiicod\cron\commands\DaemonController;
 use yiicod\mailqueue\components\MailHandler;
 use yiicod\mailqueue\components\MailHandlerInterface;

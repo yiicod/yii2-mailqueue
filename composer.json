@@ -2,7 +2,7 @@
     "name": "yiicod/yii2-mailqueue",
     "description": "The simple and powerful Mail Queue for the Yii2 framework",
     "type": "yii2-extension",
-    "license": "New BSD License",
+    "license": "MIT",
     "authors": [
         {
             "name": "Alexey Orlov",
@@ -13,8 +13,17 @@
     "require": {
         "yiicod/yii2-cron": "1.*",
         "yiicod/yii2-base": "1.*",
-        "yiisoft/yii2": "*"
+        "yiisoft/yii2": "2.*"
     },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "~2.1"
+    },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://asset-packagist.org"
+        }
+    ],
     "autoload": {
         "psr-4": {
             "yiicod\\mailqueue\\": "/"
