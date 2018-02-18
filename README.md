@@ -1,5 +1,5 @@
-Mail Queue
-==========
+Yii Mail Queue
+==============
 
 [![Latest Stable Version](https://poser.pugx.org/yiicod/yii2-mailqueue/v/stable)](https://packagist.org/packages/yiicod/yii2-mailqueue) [![Total Downloads](https://poser.pugx.org/yiicod/yii2-mailqueue/downloads)](https://packagist.org/packages/yiicod/yii2-mailqueue) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/yiicod/yii2-mailqueue/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/yiicod/yii2-mailqueue/?branch=master)[![Code Climate](https://codeclimate.com/github/yiicod/yii2-mailqueue/badges/gpa.svg)](https://codeclimate.com/github/yiicod/yii2-mailqueue)
 
